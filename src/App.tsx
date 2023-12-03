@@ -6,6 +6,7 @@ function App() {
   const search = useRef("");
   const [results, setResults] = useState<object>({});
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSearch: ChangeEventHandler<HTMLTextAreaElement> = (event) => {
     setError("");
@@ -13,18 +14,19 @@ function App() {
   };
 
   const submitData = async () => {
+    setIsLoading(true);
     if (search.current === "") {
       setError("Search term is required.");
+      setIsLoading(false);
       return;
     }
     const response = await fetch(`${API_URL}?search=${search.current}`);
     if (response.status === 200) {
       const data = await response.json();
       setResults(data);
+      setIsLoading(false);
     }
   };
-
-  const notFound = Object.keys(results).length === 0 && search.current !== "";
 
   return (
     <div className="container">
@@ -34,14 +36,13 @@ function App() {
         <label className="error">{error}</label>
       </div>
       <div className="form">
-        <label>Results</label>
+        {isLoading ? <div>Loading...</div> : <label>Results</label>}
         <div className="results">
           {Object.entries(results).map(([key, value]) => (
             <li key={key}>
               {key}: {value}
             </li>
           ))}
-          {notFound && <li>Not found..</li>}
         </div>
       </div>
       <div className="buttonContainer">
